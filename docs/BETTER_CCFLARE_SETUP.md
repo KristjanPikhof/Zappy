@@ -80,8 +80,14 @@ Nginx Management → Add domain
 
 ## Step 3: Add IP Restriction (Optional but Recommended)
 
-Edit the nginx config to restrict access to your IP only:
+Edit the nginx config using Zappy:
 
+```bash
+zappy
+# Nginx Management → View/Edit config → Select your domain
+```
+
+Or manually:
 ```bash
 sudo nano /etc/nginx/sites-available/ccflare.example.com
 ```
@@ -137,14 +143,18 @@ deny all;
 
 ## Step 4: Enable the Site
 
+If you created the domain via Zappy, it will ask if you want to enable it automatically.
+
+To enable manually:
 ```bash
-# Test nginx configuration
+zappy
+# Nginx Management → Enable domain → Select your domain
+```
+
+Or via command line:
+```bash
 sudo nginx -t
-
-# Enable the site (if not already)
 sudo ln -sf /etc/nginx/sites-available/ccflare.example.com /etc/nginx/sites-enabled/
-
-# Reload nginx
 sudo systemctl reload nginx
 ```
 
