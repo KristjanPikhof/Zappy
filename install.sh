@@ -200,9 +200,9 @@ main() {
 
     # Check if running as root or with sudo
     if [ "$EUID" -ne 0 ]; then
-        print_warning "This script requires sudo privileges."
-        print_info "Re-running with sudo..."
-        exec sudo bash "$0" "$@"
+        print_error "This script requires root privileges."
+        print_info "Please run with: sudo ./install.sh"
+        exit 1
     fi
 
     # Check for uninstall flag
