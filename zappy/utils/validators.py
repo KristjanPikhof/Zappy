@@ -116,14 +116,29 @@ def validate_email(email: str) -> tuple[bool, Optional[str]]:
 
 
 def normalize_proxy_url(url: str) -> str:
-    """Normalize a proxy URL by adding http:// if missing.
+    """Normalize a proxy URL by adding http:// and localhost if missing.
 
     Args:
-        url: URL or host:port
+        url: URL, host:port, or just port number
 
     Returns:
         Normalized URL with protocol
+
+    Examples:
+        "5001" -> "http://127.0.0.1:5001"
+        "localhost:5001" -> "http://localhost:5001"
+        "192.168.1.1:3000" -> "http://192.168.1.1:3000"
+        "http://example.com" -> "http://example.com"
     """
-    if not re.match(r"^https?://", url, re.IGNORECASE):
-        return f"http://{url}"
-    return url
+    url = url.strip()
+
+    # If already has protocol, return as is
+    if re.match(r"^https?://", url, re.IGNORECASE):
+        return url
+
+    # If it's just a port number, assume localhost
+    if re.match(r"^\d+$", url):
+        return f"http://127.0.0.1:{url}"
+
+    # Otherwise add http://
+    return f"http://{url}"
