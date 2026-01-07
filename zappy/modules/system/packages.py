@@ -17,10 +17,13 @@ from ...utils.ui import (
 )
 
 
-# Package names vary by distro
+# Package names and commands vary by distro
+# command: the actual binary name to check (may differ from package name)
+# command_apt: override command name for apt-based systems
 COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     "htop": {
         "description": "Interactive process viewer",
+        "command": "htop",
         "apt": "htop",
         "dnf": "htop",
         "pacman": "htop",
@@ -28,6 +31,7 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "micro": {
         "description": "Modern terminal text editor",
+        "command": "micro",
         "apt": "micro",
         "dnf": "micro",
         "pacman": "micro",
@@ -35,6 +39,7 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "ncdu": {
         "description": "Disk usage analyzer",
+        "command": "ncdu",
         "apt": "ncdu",
         "dnf": "ncdu",
         "pacman": "ncdu",
@@ -42,6 +47,7 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "tmux": {
         "description": "Terminal multiplexer",
+        "command": "tmux",
         "apt": "tmux",
         "dnf": "tmux",
         "pacman": "tmux",
@@ -49,6 +55,7 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "tree": {
         "description": "Directory tree viewer",
+        "command": "tree",
         "apt": "tree",
         "dnf": "tree",
         "pacman": "tree",
@@ -56,6 +63,7 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "jq": {
         "description": "JSON processor",
+        "command": "jq",
         "apt": "jq",
         "dnf": "jq",
         "pacman": "jq",
@@ -63,6 +71,8 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "bat": {
         "description": "Cat with syntax highlighting",
+        "command": "bat",
+        "command_apt": "batcat",  # Different command name on Debian/Ubuntu
         "apt": "bat",
         "dnf": "bat",
         "pacman": "bat",
@@ -70,6 +80,7 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "ripgrep": {
         "description": "Fast recursive grep",
+        "command": "rg",  # Command is 'rg' not 'ripgrep'
         "apt": "ripgrep",
         "dnf": "ripgrep",
         "pacman": "ripgrep",
@@ -77,6 +88,8 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "fd": {
         "description": "Fast find alternative",
+        "command": "fd",
+        "command_apt": "fdfind",  # Different command name on Debian/Ubuntu
         "apt": "fd-find",
         "dnf": "fd-find",
         "pacman": "fd",
@@ -84,6 +97,7 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
     },
     "neofetch": {
         "description": "System info display",
+        "command": "neofetch",
         "apt": "neofetch",
         "dnf": "neofetch",
         "pacman": "neofetch",
@@ -113,6 +127,37 @@ class PackagesManager:
 
         return pkg_info.get(pm_key, tool)
 
+    def _get_command_name(self, tool: str) -> str:
+        """Get the command name to check if tool is installed.
+
+        Args:
+            tool: Tool name
+
+        Returns:
+            Command name for current distro
+        """
+        pkg_info = COMMON_PACKAGES.get(tool, {})
+
+        # Check for distro-specific command name override
+        if self.pm == PackageManager.APT:
+            cmd = pkg_info.get("command_apt")
+            if cmd:
+                return cmd
+
+        return pkg_info.get("command", tool)
+
+    def _is_installed(self, tool: str) -> bool:
+        """Check if a tool is installed.
+
+        Args:
+            tool: Tool name
+
+        Returns:
+            True if installed
+        """
+        cmd = self._get_command_name(tool)
+        return check_command_exists(cmd)
+
     def install_menu(self) -> bool:
         """Show interactive package installation menu.
 
@@ -128,7 +173,7 @@ class PackagesManager:
         # Show available packages with install status
         items = []
         for name, info in COMMON_PACKAGES.items():
-            installed = check_command_exists(name)
+            installed = self._is_installed(name)
             status = "[green]✓[/green]" if installed else "[dim]○[/dim]"
             items.append(f"{status} {name} - {info['description']}")
 
@@ -155,7 +200,7 @@ class PackagesManager:
         Returns:
             True on success, False on failure
         """
-        if check_command_exists(tool):
+        if self._is_installed(tool):
             print_info(f"{tool} is already installed.")
             return True
 
@@ -184,7 +229,7 @@ class PackagesManager:
         # Find missing packages
         missing = []
         for tool in COMMON_PACKAGES:
-            if not check_command_exists(tool):
+            if not self._is_installed(tool):
                 missing.append(tool)
 
         if not missing:
@@ -224,11 +269,13 @@ class PackagesManager:
         print_header("Installed Tools")
 
         for name, info in COMMON_PACKAGES.items():
-            installed = check_command_exists(name)
+            installed = self._is_installed(name)
+            cmd = self._get_command_name(name)
+            cmd_info = f" (cmd: {cmd})" if cmd != name else ""
             if installed:
-                console.print(f"  [green]✓[/green] {name} - {info['description']}")
+                console.print(f"  [green]✓[/green] {name}{cmd_info} - {info['description']}")
             else:
-                console.print(f"  [dim]○[/dim] {name} - {info['description']}")
+                console.print(f"  [dim]○[/dim] {name}{cmd_info} - {info['description']}")
 
         pause()
         return True
