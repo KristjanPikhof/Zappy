@@ -61,19 +61,23 @@ class SystemMonitor:
 
         # CPU info
         console.print("[bold cyan]CPU Usage:[/bold cyan]")
-        run_command(["bash", "-c", "top -bn1 | head -5"])
+        _, stdout, _ = run_command(["bash", "-c", "top -bn1 | head -5"])
+        console.print(stdout)
 
         # Memory info
         console.print("\n[bold cyan]Memory Usage:[/bold cyan]")
-        run_command(["free", "-h"])
+        _, stdout, _ = run_command(["free", "-h"])
+        console.print(stdout)
 
         # Disk usage
         console.print("\n[bold cyan]Disk Usage:[/bold cyan]")
-        run_command(["df", "-h", "/"])
+        _, stdout, _ = run_command(["df", "-h", "/"])
+        console.print(stdout)
 
         # Load average
         console.print("\n[bold cyan]Load Average:[/bold cyan]")
-        run_command(["uptime"])
+        _, stdout, _ = run_command(["uptime"])
+        console.print(stdout)
 
         pause()
         return True
@@ -87,12 +91,13 @@ class SystemMonitor:
         clear_screen()
         print_header("Running Services")
 
-        run_sudo([
+        _, stdout, _ = run_sudo([
             "systemctl", "list-units",
             "--type=service",
             "--state=running",
             "--no-pager"
-        ])
+        ], show_command=False)
+        console.print(stdout)
 
         pause()
         return True
@@ -132,15 +137,18 @@ class SystemMonitor:
 
         # Listening ports
         console.print("[bold cyan]Listening Ports:[/bold cyan]")
-        run_sudo(["ss", "-tlnp"])
+        _, stdout, _ = run_sudo(["ss", "-tlnp"], show_command=False)
+        console.print(stdout)
 
         # Active connections count
         console.print("\n[bold cyan]Connection Summary:[/bold cyan]")
-        run_command(["bash", "-c", "ss -s | head -10"])
+        _, stdout, _ = run_command(["bash", "-c", "ss -s | head -10"])
+        console.print(stdout)
 
         # IP addresses
         console.print("\n[bold cyan]IP Addresses:[/bold cyan]")
-        run_command(["hostname", "-I"])
+        _, stdout, _ = run_command(["hostname", "-I"])
+        console.print(stdout)
 
         pause()
         return True
@@ -169,14 +177,17 @@ class SystemMonitor:
 
         if choice == 0:
             print_header("System Logs")
-            run_sudo(["journalctl", "-n", "50", "--no-pager"])
+            _, stdout, _ = run_sudo(["journalctl", "-n", "50", "--no-pager"], show_command=False)
+            console.print(stdout)
 
         elif choice == 1:
             print_header("Nginx Logs")
             console.print("[bold]Access Log:[/bold]")
-            run_sudo(["tail", "-20", "/var/log/nginx/access.log"])
+            _, stdout, _ = run_sudo(["tail", "-20", "/var/log/nginx/access.log"], show_command=False)
+            console.print(stdout if stdout else "[dim]No access log entries[/dim]")
             console.print("\n[bold]Error Log:[/bold]")
-            run_sudo(["tail", "-20", "/var/log/nginx/error.log"])
+            _, stdout, _ = run_sudo(["tail", "-20", "/var/log/nginx/error.log"], show_command=False)
+            console.print(stdout if stdout else "[dim]No error log entries[/dim]")
 
         elif choice == 2:
             print_header("SSH Auth Logs")
@@ -185,6 +196,7 @@ class SystemMonitor:
                 "/var/log/auth.log",
                 "/var/log/secure",
             ]
+            found = False
             for log_file in log_files:
                 success, stdout, _ = run_sudo(
                     ["tail", "-50", log_file],
@@ -192,13 +204,16 @@ class SystemMonitor:
                 )
                 if success and stdout:
                     console.print(stdout)
+                    found = True
                     break
-            else:
-                run_sudo(["journalctl", "-u", "sshd", "-n", "50", "--no-pager"])
+            if not found:
+                _, stdout, _ = run_sudo(["journalctl", "-u", "sshd", "-n", "50", "--no-pager"], show_command=False)
+                console.print(stdout)
 
         elif choice == 3:
             print_header("Kernel Messages")
-            run_sudo(["dmesg", "--time-format=reltime", "|", "tail", "-50"])
+            _, stdout, _ = run_sudo(["bash", "-c", "dmesg --time-format=reltime | tail -50"], show_command=False)
+            console.print(stdout)
 
         pause()
         return True
