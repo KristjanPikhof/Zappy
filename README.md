@@ -120,6 +120,7 @@ python -m zappy
 ## Documentation
 
 - [New VPS Setup Guide](docs/NEW_VPS_SETUP.md) - First-time server setup
+- [Better-CCFlare Setup](docs/BETTER_CCFLARE_SETUP.md) - Deploy better-ccflare with IP restriction
 - [Nginx Templates](#nginx-templates) - Available configuration templates
 
 ## Nginx Templates
