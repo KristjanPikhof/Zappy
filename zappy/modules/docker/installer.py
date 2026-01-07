@@ -33,7 +33,13 @@ class DockerInstaller:
         Returns:
             True if running, False otherwise
         """
+        # Try without sudo first
         success, _, _ = run_command(["docker", "info"])
+        if success:
+            return True
+
+        # Try with sudo (needed before user logs out/in after install)
+        success, _, _ = run_sudo(["docker", "info"], show_command=False)
         return success
 
     def install(self) -> bool:

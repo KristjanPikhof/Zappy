@@ -45,9 +45,18 @@ class DockgeManager:
         if not check_command_exists("docker"):
             return False
 
+        # Try without sudo first
         success, stdout, _ = run_command([
             "docker", "ps", "--filter", "name=dockge", "--format", "{{.Names}}"
         ])
+
+        if success and "dockge" in stdout:
+            return True
+
+        # Try with sudo (needed before user logs out/in after Docker install)
+        success, stdout, _ = run_sudo([
+            "docker", "ps", "--filter", "name=dockge", "--format", "{{.Names}}"
+        ], show_command=False)
 
         return success and "dockge" in stdout
 
@@ -108,12 +117,19 @@ class DockgeManager:
         console.print("[dim]Downloading Dockge compose.yaml...[/dim]")
         compose_url = f"https://dockge.kuma.pet/compose.yaml?port={port}&stacksPath={stacks_path}"
 
+        # Download to temp location first, then move with sudo
+        import tempfile
+        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as tmp:
+            tmp_path = tmp.name
+
         success, _, _ = run_command([
-            "curl", "-fsSL", compose_url,
-            "-o", str(self.dockge_dir / "compose.yaml")
+            "curl", "-fsSL", compose_url, "-o", tmp_path
         ])
 
-        if not success:
+        if success:
+            # Move to final location with sudo
+            run_sudo(["mv", tmp_path, str(self.dockge_dir / "compose.yaml")], show_command=False)
+        else:
             # Fallback: create compose.yaml manually
             console.print("[dim]Using fallback compose.yaml...[/dim]")
             compose_content = self._get_compose_yaml(port, stacks_path)
@@ -122,12 +138,12 @@ class DockgeManager:
                 pause()
                 return False
 
-        # Start Dockge
+        # Start Dockge (use sudo since user may not have docker group yet)
         console.print("[dim]Starting Dockge...[/dim]")
-        success, stdout, stderr = run_command([
+        success, stdout, stderr = run_sudo([
             "docker", "compose", "-f", str(self.dockge_dir / "compose.yaml"),
             "up", "-d"
-        ])
+        ], show_command=False)
 
         if not success:
             print_error("Failed to start Dockge.")
@@ -186,10 +202,11 @@ services:
             print_error("Dockge is not installed.")
             return False
 
-        success, _, _ = run_command([
+        # Use sudo since user may not have docker group yet
+        success, _, _ = run_sudo([
             "docker", "compose", "-f", str(self.dockge_dir / "compose.yaml"),
             "up", "-d"
-        ])
+        ], show_command=False)
 
         if success:
             print_success("Dockge started.")
@@ -208,10 +225,10 @@ services:
             print_error("Dockge is not installed.")
             return False
 
-        success, _, _ = run_command([
+        success, _, _ = run_sudo([
             "docker", "compose", "-f", str(self.dockge_dir / "compose.yaml"),
             "down"
-        ])
+        ], show_command=False)
 
         if success:
             print_success("Dockge stopped.")
@@ -272,16 +289,16 @@ services:
             return False
 
         console.print("[dim]Pulling latest image...[/dim]")
-        run_command([
+        run_sudo([
             "docker", "compose", "-f", str(self.dockge_dir / "compose.yaml"),
             "pull"
-        ])
+        ], show_command=False)
 
         console.print("[dim]Restarting Dockge...[/dim]")
-        success, _, _ = run_command([
+        success, _, _ = run_sudo([
             "docker", "compose", "-f", str(self.dockge_dir / "compose.yaml"),
             "up", "-d"
-        ])
+        ], show_command=False)
 
         if success:
             print_success("Dockge updated!")
@@ -315,8 +332,8 @@ services:
         self.stop()
 
         # Remove container and image
-        run_command(["docker", "rm", "dockge"])
-        run_command(["docker", "rmi", "louislam/dockge:1"])
+        run_sudo(["docker", "rm", "dockge"], show_command=False)
+        run_sudo(["docker", "rmi", "louislam/dockge:1"], show_command=False)
 
         # Remove Dockge directory
         if confirm("Remove Dockge data directory?"):

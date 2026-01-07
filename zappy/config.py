@@ -1,6 +1,7 @@
 """Global configuration for Zappy the VPS Toolbox."""
 
 import os
+import subprocess
 from pathlib import Path
 from datetime import datetime
 
@@ -51,5 +52,13 @@ def ensure_backup_dir(config_type: str) -> Path:
         Path to backup directory
     """
     backup_path = BACKUP_DIR / config_type
-    backup_path.mkdir(parents=True, exist_ok=True)
+
+    # Use sudo to create directory since /var/backups requires root
+    if not backup_path.exists():
+        subprocess.run(
+            ["sudo", "mkdir", "-p", str(backup_path)],
+            capture_output=True,
+            check=False
+        )
+
     return backup_path
