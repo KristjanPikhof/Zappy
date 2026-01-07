@@ -234,6 +234,51 @@ EOF
     sudo chmod +x "$BIN_LINK"
 }
 
+# Update function
+update() {
+    print_header "Updating Zappy the VPS Toolbox"
+
+    if [ ! -d "$INSTALL_DIR" ]; then
+        print_error "Zappy is not installed. Run install first."
+        exit 1
+    fi
+
+    print_info "Downloading latest version..."
+
+    # Clone to temp directory
+    rm -rf "$TEMP_CLONE_DIR"
+    git clone "$REPO_URL" "$TEMP_CLONE_DIR"
+
+    if [ $? -ne 0 ]; then
+        print_error "Failed to download latest version."
+        exit 1
+    fi
+
+    # Backup current installation
+    print_info "Backing up current installation..."
+    sudo cp -r "$INSTALL_DIR" "${INSTALL_DIR}.backup"
+
+    # Update files
+    print_info "Updating files..."
+    sudo rm -rf "$INSTALL_DIR/zappy"
+    sudo cp -r "$TEMP_CLONE_DIR/zappy" "$INSTALL_DIR/"
+    sudo cp "$TEMP_CLONE_DIR/setup.py" "$INSTALL_DIR/"
+    sudo cp "$TEMP_CLONE_DIR/requirements.txt" "$INSTALL_DIR/"
+
+    # Reinstall Python package
+    print_info "Updating Python dependencies..."
+    sudo "$VENV_DIR/bin/pip" install --upgrade pip
+    sudo "$VENV_DIR/bin/pip" install -r "$INSTALL_DIR/requirements.txt"
+    sudo "$VENV_DIR/bin/pip" install -e "$INSTALL_DIR"
+
+    # Cleanup
+    rm -rf "$TEMP_CLONE_DIR"
+    sudo rm -rf "${INSTALL_DIR}.backup"
+
+    print_success "Zappy updated successfully!"
+    print_info "Run 'zappy' to use the updated version."
+}
+
 # Uninstall function
 uninstall() {
     print_header "Uninstalling Zappy the VPS Toolbox"
@@ -261,6 +306,12 @@ main() {
     # Check for uninstall flag
     if [ "$1" = "--uninstall" ] || [ "$1" = "-u" ]; then
         uninstall
+        exit 0
+    fi
+
+    # Check for update flag
+    if [ "$1" = "--update" ] || [ "$1" = "update" ]; then
+        update
         exit 0
     fi
 
