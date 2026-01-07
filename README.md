@@ -58,6 +58,38 @@ source venv/bin/activate
 pip install -e .
 ```
 
+## Update
+
+To update Zappy to the latest version:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/Zappy/main/install.sh | sudo bash -s -- --update
+```
+
+Or if you have the repo cloned:
+
+```bash
+cd /path/to/Zappy
+git pull
+sudo ./install.sh --update
+```
+
+## Uninstall
+
+To completely remove Zappy:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/Zappy/main/install.sh | sudo bash -s -- --uninstall
+```
+
+Or locally:
+
+```bash
+sudo ./install.sh --uninstall
+```
+
+This removes `/opt/zappy` and the `zappy` command. Your nginx configs, Docker containers, and other installed tools remain untouched.
+
 ## Usage
 
 ```bash
