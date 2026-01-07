@@ -275,12 +275,17 @@ main() {
     print_info "This will install Zappy the VPS Toolbox to $INSTALL_DIR"
     print_info "A global command 'zappy' will be created."
     echo ""
-    read -p "Continue with installation? [Y/n] " -n 1 -r
-    echo ""
 
-    if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ ! -z $REPLY ]]; then
-        print_info "Installation cancelled."
-        exit 0
+    # Skip confirmation if running non-interactively (e.g., piped from curl)
+    if [ -t 0 ]; then
+        read -p "Continue with installation? [Y/n] " -n 1 -r
+        echo ""
+        if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ ! -z $REPLY ]]; then
+            print_info "Installation cancelled."
+            exit 0
+        fi
+    else
+        print_info "Running non-interactively, proceeding with installation..."
     fi
 
     # Install
