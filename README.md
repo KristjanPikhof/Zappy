@@ -39,7 +39,7 @@ curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/vps-toolbox/main/ins
 
 ```bash
 # Clone the repository
-git clone https://github.com/KristjanPikhof/vps-toolbox.git
+git clone https://github.com/KristjanPikhof/Zappy.git
 cd vps-toolbox
 
 # Create virtual environment

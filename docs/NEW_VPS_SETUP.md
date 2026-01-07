@@ -116,7 +116,7 @@ As your new user:
 sudo apt update && sudo apt install -y git
 
 # Clone the toolbox
-git clone https://github.com/KristjanPikhof/vps-toolbox.git /tmp/vps-toolbox
+git clone https://github.com/KristjanPikhof/Zappy.git /tmp/vps-toolbox
 cd /tmp/vps-toolbox
 
 # Run installer
