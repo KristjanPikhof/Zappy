@@ -325,6 +325,7 @@ class VPSToolbox:
                 "Dockge status",
                 "Install Dockge",
                 "Update Dockge",
+                "Uninstall Dockge",
             ]
 
             choice = select_from_list(options, "Select action:")
@@ -344,6 +345,8 @@ class VPSToolbox:
                 self.dockge.install()
             elif choice == 5:
                 self.dockge.update()
+            elif choice == 6:
+                self.dockge.uninstall()
 
     def system_menu(self):
         """Display system utilities menu."""
@@ -357,6 +360,8 @@ class VPSToolbox:
                 "Setup zsh + oh-my-zsh",
                 "Shell status",
                 "Install AiTermy",
+                "Update AiTermy",
+                "Uninstall AiTermy",
                 "AiTermy status",
                 "System monitoring",
             ]
@@ -377,8 +382,12 @@ class VPSToolbox:
             elif choice == 4:
                 self.aitermy.install()
             elif choice == 5:
-                self.aitermy.show_status()
+                self.aitermy.update()
             elif choice == 6:
+                self.aitermy.uninstall()
+            elif choice == 7:
+                self.aitermy.show_status()
+            elif choice == 8:
                 self.monitor.show_menu()
 
 

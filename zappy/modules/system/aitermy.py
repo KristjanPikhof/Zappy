@@ -163,9 +163,10 @@ class AiTermyInstaller:
 
         console.print("[dim]Updating AiTermy...[/dim]")
 
-        success, _, stderr = run_command([
+        # Use sudo since repo was cloned with sudo
+        success, _, stderr = run_sudo([
             "git", "-C", str(self.install_dir), "pull"
-        ])
+        ], show_command=False)
 
         if success:
             print_success("AiTermy updated!")
