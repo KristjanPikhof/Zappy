@@ -17,6 +17,8 @@ NC='\033[0m' # No Color
 INSTALL_DIR="/opt/zappy"
 VENV_DIR="$INSTALL_DIR/venv"
 BIN_LINK="/usr/local/bin/zappy"
+REPO_URL="https://github.com/KristjanPikhof/Zappy.git"
+TEMP_CLONE_DIR="/tmp/zappy-install"
 
 # Print functions
 print_header() {
@@ -111,6 +113,55 @@ get_packages() {
             PACKAGES="python3 python3-pip nginx certbot python3-certbot-nginx curl wget git"
             ;;
     esac
+}
+
+# Ensure repo is available (clone if running standalone)
+ensure_repo() {
+    if [ -d "zappy" ] && [ -f "setup.py" ]; then
+        # Already in repo directory
+        print_info "Running from cloned repository."
+        WORK_DIR="$(pwd)"
+    else
+        # Need to clone the repo
+        print_info "Cloning Zappy repository..."
+
+        # Check if git is available
+        if ! command -v git &> /dev/null; then
+            print_error "Git is not installed. Installing git first..."
+            # Try to install git based on available package manager
+            if command -v apt &> /dev/null; then
+                apt update && apt install -y git
+            elif command -v dnf &> /dev/null; then
+                dnf install -y git
+            elif command -v yum &> /dev/null; then
+                yum install -y git
+            elif command -v pacman &> /dev/null; then
+                pacman -Sy --noconfirm git
+            elif command -v apk &> /dev/null; then
+                apk add git
+            elif command -v zypper &> /dev/null; then
+                zypper install -y git
+            else
+                print_error "Cannot install git. Please install git manually and try again."
+                exit 1
+            fi
+        fi
+
+        # Remove old temp dir if exists
+        rm -rf "$TEMP_CLONE_DIR"
+
+        # Clone the repository
+        git clone "$REPO_URL" "$TEMP_CLONE_DIR"
+
+        if [ $? -ne 0 ]; then
+            print_error "Failed to clone repository."
+            exit 1
+        fi
+
+        WORK_DIR="$TEMP_CLONE_DIR"
+        cd "$WORK_DIR"
+        print_success "Repository cloned to $TEMP_CLONE_DIR"
+    fi
 }
 
 # Install system dependencies
@@ -211,6 +262,9 @@ main() {
         exit 0
     fi
 
+    # Ensure we have the repo files
+    ensure_repo
+
     # Detect system
     detect_distro
     detect_package_manager
@@ -239,6 +293,11 @@ main() {
     echo ""
     print_info "Run 'zappy' to start using the tool."
     echo ""
+
+    # Cleanup temp clone if used
+    if [ -d "$TEMP_CLONE_DIR" ]; then
+        rm -rf "$TEMP_CLONE_DIR"
+    fi
 }
 
 main "$@"

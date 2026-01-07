@@ -32,6 +32,12 @@ A comprehensive VPS management CLI tool for Linux servers.
 ### Quick Install (Recommended)
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/Zappy/main/install.sh | sudo bash
+```
+
+Or with git clone:
+
+```bash
 git clone https://github.com/KristjanPikhof/Zappy.git /tmp/zappy
 cd /tmp/zappy
 sudo ./install.sh
