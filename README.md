@@ -1,4 +1,5 @@
 # Zappy the VPS Toolbox
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/KristjanPikhof/AiTermy)
 
 A comprehensive VPS management CLI tool for Linux servers.
 
