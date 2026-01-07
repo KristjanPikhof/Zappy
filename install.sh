@@ -19,6 +19,7 @@ VENV_DIR="$INSTALL_DIR/venv"
 BIN_LINK="/usr/local/bin/zappy"
 REPO_URL="https://github.com/KristjanPikhof/Zappy.git"
 TEMP_CLONE_DIR="/tmp/zappy-install"
+CLONED_REPO=false
 
 # Print functions
 print_header() {
@@ -160,6 +161,7 @@ ensure_repo() {
 
         WORK_DIR="$TEMP_CLONE_DIR"
         cd "$WORK_DIR"
+        CLONED_REPO=true
         print_success "Repository cloned to $TEMP_CLONE_DIR"
     fi
 }
@@ -277,15 +279,15 @@ main() {
     echo ""
 
     # Skip confirmation if running non-interactively (e.g., piped from curl)
-    if [ -t 0 ]; then
+    if [ "$CLONED_REPO" = true ] || [ ! -t 0 ]; then
+        print_info "Running non-interactively, proceeding with installation..."
+    else
         read -p "Continue with installation? [Y/n] " -n 1 -r
         echo ""
         if [[ ! $REPLY =~ ^[Yy]$ ]] && [[ ! -z $REPLY ]]; then
             print_info "Installation cancelled."
             exit 0
         fi
-    else
-        print_info "Running non-interactively, proceeding with installation..."
     fi
 
     # Install
