@@ -14,9 +14,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Installation paths
-INSTALL_DIR="/opt/vps-toolbox"
+INSTALL_DIR="/opt/zappy"
 VENV_DIR="$INSTALL_DIR/venv"
-BIN_LINK="/usr/local/bin/vps-toolbox"
+BIN_LINK="/usr/local/bin/zappy"
 
 # Print functions
 print_header() {
@@ -127,7 +127,7 @@ install_dependencies() {
 }
 
 # Install Zappy the VPS Toolbox
-install_vps_toolbox() {
+install_zappy() {
     print_header "Installing Zappy the VPS Toolbox"
 
     # Create installation directory
@@ -135,14 +135,14 @@ install_vps_toolbox() {
     sudo mkdir -p "$INSTALL_DIR"
 
     # Copy files
-    if [ -d "vps_toolbox" ]; then
+    if [ -d "zappy" ]; then
         print_info "Copying Zappy files..."
-        sudo cp -r vps_toolbox "$INSTALL_DIR/"
+        sudo cp -r zappy "$INSTALL_DIR/"
         sudo cp setup.py "$INSTALL_DIR/"
         sudo cp requirements.txt "$INSTALL_DIR/"
         sudo cp README.md "$INSTALL_DIR/" 2>/dev/null || true
     else
-        print_error "vps_toolbox directory not found. Please run from the project root."
+        print_error "zappy directory not found. Please run from the project root."
         exit 1
     fi
 
@@ -158,7 +158,7 @@ install_vps_toolbox() {
 
     # Create symlink
     print_info "Creating global command..."
-    sudo ln -sf "$VENV_DIR/bin/vps-toolbox" "$BIN_LINK"
+    sudo ln -sf "$VENV_DIR/bin/zappy" "$BIN_LINK"
 
     # Set permissions
     sudo chmod +x "$BIN_LINK"
@@ -172,10 +172,10 @@ create_wrapper() {
 
     cat << 'EOF' | sudo tee "$BIN_LINK" > /dev/null
 #!/bin/bash
-INSTALL_DIR="/opt/vps-toolbox"
+INSTALL_DIR="/opt/zappy"
 VENV_DIR="$INSTALL_DIR/venv"
 source "$VENV_DIR/bin/activate"
-python -m vps_toolbox "$@"
+python -m zappy "$@"
 EOF
 
     sudo chmod +x "$BIN_LINK"
@@ -219,7 +219,7 @@ main() {
     # Confirm installation
     echo ""
     print_info "This will install Zappy the VPS Toolbox to $INSTALL_DIR"
-    print_info "A global command 'vps-toolbox' will be created."
+    print_info "A global command 'zappy' will be created."
     echo ""
     read -p "Continue with installation? [Y/n] " -n 1 -r
     echo ""
@@ -231,13 +231,13 @@ main() {
 
     # Install
     install_dependencies
-    install_vps_toolbox
+    install_zappy
 
     print_header "Installation Complete!"
     echo ""
     print_success "Zappy the VPS Toolbox has been installed successfully!"
     echo ""
-    print_info "Run 'vps-toolbox' to start using the tool."
+    print_info "Run 'zappy' to start using the tool."
     echo ""
 }
 

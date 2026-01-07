@@ -6,13 +6,13 @@ with open("README.md", "r", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
-    name="vps-toolbox",
+    name="zappy",
     version="1.0.0",
     author="Kristjan Pikhof",
     description="Zappy the VPS Toolbox - Comprehensive VPS management CLI tool",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/KristjanPikhof/vps-toolbox",
+    url="https://github.com/KristjanPikhof/zappy",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -34,7 +34,7 @@ setup(
     ],
     entry_points={
         "console_scripts": [
-            "vps-toolbox=vps_toolbox.cli:main",
+            "zappy=zappy.cli:main",
         ],
     },
 )

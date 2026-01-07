@@ -32,7 +32,7 @@ A comprehensive VPS management CLI tool for Linux servers.
 ### Quick Install (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/vps-toolbox/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/zappy/main/install.sh | bash
 ```
 
 ### Manual Install
@@ -40,7 +40,7 @@ curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/vps-toolbox/main/ins
 ```bash
 # Clone the repository
 git clone https://github.com/KristjanPikhof/Zappy.git
-cd vps-toolbox
+cd zappy
 
 # Create virtual environment
 python3 -m venv venv
@@ -53,13 +53,13 @@ pip install -e .
 ## Usage
 
 ```bash
-vps-toolbox
+zappy
 ```
 
 Or run as a module:
 
 ```bash
-python -m vps_toolbox
+python -m zappy
 ```
 
 ## Quick Start After Installation

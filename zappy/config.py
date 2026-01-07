@@ -10,7 +10,7 @@ NGINX_SITES_ENABLED = "/etc/nginx/sites-enabled"
 NGINX_LOG_DIR = "/var/log/nginx"
 
 # Backup directory
-BACKUP_DIR = Path("/var/backups/vps-toolbox")
+BACKUP_DIR = Path("/var/backups/zappy")
 
 # Docker paths
 DOCKGE_DIR = Path("/opt/dockge")
@@ -23,7 +23,7 @@ AITERMY_DIR = Path("/opt/aitermy")
 SSH_CONFIG_PATH = Path("/etc/ssh/sshd_config")
 
 # Certbot
-CERTBOT_EMAIL_FILE = Path.home() / ".vps-toolbox" / "certbot-email"
+CERTBOT_EMAIL_FILE = Path.home() / ".zappy" / "certbot-email"
 
 
 def get_backup_path(config_type: str, name: str = "") -> Path:

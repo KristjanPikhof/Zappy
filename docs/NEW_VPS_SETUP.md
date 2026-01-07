@@ -15,7 +15,7 @@ A step-by-step guide to securely set up a brand new VPS from scratch.
 | 3 | Set up SSH key | Enable key-based login |
 | 4 | Test new user login | **Before closing root session!** |
 | 5 | `./install.sh` | Install Zappy the VPS Toolbox |
-| 6 | `vps-toolbox` | Harden server |
+| 6 | `zappy` | Harden server |
 
 ---
 
@@ -116,8 +116,8 @@ As your new user:
 sudo apt update && sudo apt install -y git
 
 # Clone the toolbox
-git clone https://github.com/KristjanPikhof/Zappy.git /tmp/vps-toolbox
-cd /tmp/vps-toolbox
+git clone https://github.com/KristjanPikhof/Zappy.git /tmp/zappy
+cd /tmp/zappy
 
 # Run installer
 sudo ./install.sh
@@ -128,7 +128,7 @@ sudo ./install.sh
 Run Zappy:
 
 ```bash
-vps-toolbox
+zappy
 ```
 
 ### Recommended setup order:
@@ -273,4 +273,4 @@ passwd USERNAME
 
 ---
 
-**Need help?** Run `vps-toolbox` and let Zappy guide you!
+**Need help?** Run `zappy` and let Zappy guide you!
