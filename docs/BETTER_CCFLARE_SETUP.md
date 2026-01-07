@@ -139,6 +139,22 @@ allow 5.6.7.8;
 deny all;
 ```
 
+**Optional - Redirect blocked users:** Instead of showing a 403 Forbidden page, redirect unauthorized visitors to another site:
+
+```nginx
+# IP Restriction
+allow YOUR.PUBLIC.IP.HERE;
+deny all;
+
+# Redirect 403 (blocked) to your main site
+error_page 403 = @denied;
+location @denied {
+    return 302 https://your-main-site.com;
+}
+```
+
+This way, anyone not on your IP allowlist gets silently redirected instead of seeing an error page.
+
 ---
 
 ## Step 4: Enable the Site
