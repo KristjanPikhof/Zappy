@@ -172,71 +172,111 @@ class FirewallManager:
 
         return success
 
-    def open_port(self) -> bool:
+    def get_rules(self) -> List[str]:
+        """Get current firewall rules as a list of strings.
+
+        Returns:
+            List of rule strings
+        """
+        fw_type = self.firewall_type
+        if fw_type == FirewallType.NONE:
+            return []
+
+        if fw_type == FirewallType.UFW:
+            success, stdout, _ = run_sudo(
+                ["ufw", "status"],
+                show_command=False
+            )
+        else:
+            success, stdout, _ = run_sudo(
+                ["firewall-cmd", "--list-all"],
+                show_command=False
+            )
+
+        if success:
+            return stdout.strip().split("\n")
+        return []
+
+    def open_port(self, port: str = None, protocol: str = None, silent: bool = False) -> bool:
         """Open a port in the firewall.
+
+        Args:
+            port: Port number (if None, will prompt)
+            protocol: Protocol - 'tcp', 'udp', or 'both' (if None, will prompt)
+            silent: If True, don't show headers/prompts/pause
 
         Returns:
             True on success, False on failure
         """
-        clear_screen()
-        print_header("Open Port")
+        if not silent:
+            clear_screen()
+            print_header("Open Port")
 
         fw_type = self.firewall_type
         if fw_type == FirewallType.NONE:
-            print_error("No supported firewall found.")
-            pause()
+            if not silent:
+                print_error("No supported firewall found.")
+                pause()
             return False
 
-        port = prompt("Enter port number").strip()
+        # Get port if not provided
+        if port is None:
+            port = prompt("Enter port number").strip()
+
         is_valid, error = validate_port(port)
         if not is_valid:
-            print_error(error)
-            pause()
+            if not silent:
+                print_error(error)
+                pause()
             return False
 
-        protocols = ["TCP only", "UDP only", "Both TCP and UDP"]
-        choice = select_from_list(protocols, "Select protocol:")
-        if choice is None:
-            return False
+        # Get protocol if not provided
+        if protocol is None:
+            protocols = ["TCP only", "UDP only", "Both TCP and UDP"]
+            choice = select_from_list(protocols, "Select protocol:")
+            if choice is None:
+                return False
+            protocol = ["tcp", "udp", "both"][choice]
 
         success = False
 
         if fw_type == FirewallType.UFW:
-            if choice == 0:  # TCP
-                success, _, _ = run_sudo(["ufw", "allow", f"{port}/tcp"])
-            elif choice == 1:  # UDP
-                success, _, _ = run_sudo(["ufw", "allow", f"{port}/udp"])
-            else:  # Both
-                success1, _, _ = run_sudo(["ufw", "allow", f"{port}/tcp"])
-                success2, _, _ = run_sudo(["ufw", "allow", f"{port}/udp"])
+            if protocol == "tcp":
+                success, _, _ = run_sudo(["ufw", "allow", f"{port}/tcp"], show_command=not silent)
+            elif protocol == "udp":
+                success, _, _ = run_sudo(["ufw", "allow", f"{port}/udp"], show_command=not silent)
+            else:  # both
+                success1, _, _ = run_sudo(["ufw", "allow", f"{port}/tcp"], show_command=not silent)
+                success2, _, _ = run_sudo(["ufw", "allow", f"{port}/udp"], show_command=not silent)
                 success = success1 and success2
         else:  # firewalld
-            if choice == 0:  # TCP
+            if protocol == "tcp":
                 success, _, _ = run_sudo([
                     "firewall-cmd", "--add-port", f"{port}/tcp", "--permanent"
-                ])
-            elif choice == 1:  # UDP
+                ], show_command=not silent)
+            elif protocol == "udp":
                 success, _, _ = run_sudo([
                     "firewall-cmd", "--add-port", f"{port}/udp", "--permanent"
-                ])
-            else:  # Both
+                ], show_command=not silent)
+            else:  # both
                 success1, _, _ = run_sudo([
                     "firewall-cmd", "--add-port", f"{port}/tcp", "--permanent"
-                ])
+                ], show_command=not silent)
                 success2, _, _ = run_sudo([
                     "firewall-cmd", "--add-port", f"{port}/udp", "--permanent"
-                ])
+                ], show_command=not silent)
                 success = success1 and success2
 
             if success:
                 run_sudo(["firewall-cmd", "--reload"], show_command=False)
 
-        if success:
-            print_success(f"Port {port} opened.")
-        else:
-            print_error(f"Failed to open port {port}.")
+        if not silent:
+            if success:
+                print_success(f"Port {port} opened.")
+            else:
+                print_error(f"Failed to open port {port}.")
+            pause()
 
-        pause()
         return success
 
     def close_port(self) -> bool:

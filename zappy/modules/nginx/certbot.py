@@ -23,6 +23,7 @@ from ...utils.ui import (
 )
 from ...utils.validators import validate_email
 from .manager import NginxManager
+from ..firewall import FirewallManager
 
 
 @dataclass
@@ -39,6 +40,7 @@ class CertbotManager:
 
     def __init__(self):
         self.nginx_manager = NginxManager()
+        self.firewall = FirewallManager()
         self._email: Optional[str] = None
 
     @property
@@ -92,6 +94,53 @@ class CertbotManager:
             if not confirm("Try again?"):
                 return None
 
+    def _check_firewall_ports(self) -> bool:
+        """Check if ports 80 and 443 are open, offer to open them if not.
+
+        Returns:
+            True if ports are open or were opened, False if user declined
+        """
+        # Check if firewall is active
+        if self.firewall.firewall_type.value == "none":
+            return True  # No firewall, proceed
+
+        # Get current rules
+        rules = self.firewall.get_rules()
+        rules_text = "\n".join(rules) if rules else ""
+
+        ports_needed = []
+
+        # Check for port 80
+        if "80" not in rules_text and "http" not in rules_text.lower():
+            ports_needed.append(("80", "HTTP"))
+
+        # Check for port 443
+        if "443" not in rules_text and "https" not in rules_text.lower():
+            ports_needed.append(("443", "HTTPS"))
+
+        if not ports_needed:
+            return True  # All ports already open
+
+        # Warn user and offer to open ports
+        print_warning("Required firewall ports are not open!")
+        for port, name in ports_needed:
+            console.print(f"  - Port {port} ({name}) is [red]closed[/red]")
+
+        console.print()
+        if confirm("Open required ports now?", default=True):
+            for port, name in ports_needed:
+                success = self.firewall.open_port(port, "tcp", silent=True)
+                if success:
+                    print_success(f"Opened port {port} ({name})")
+                else:
+                    print_error(f"Failed to open port {port}")
+                    return False
+            console.print()
+            return True
+        else:
+            print_warning("Certificate request may fail without ports 80/443 open.")
+            return confirm("Continue anyway?")
+
     def add_https(self) -> bool:
         """Add HTTPS to a domain using Certbot.
 
@@ -131,12 +180,17 @@ class CertbotManager:
             pause()
             return False
 
+        # Check firewall ports
+        if not self._check_firewall_ports():
+            pause()
+            return False
+
         # Confirm
         console.print(f"\n[bold]Certificate Details:[/bold]")
         console.print(f"  Domain: {domain.name}")
         console.print(f"  Email: {email}")
 
-        print_warning("\nEnsure DNS is pointing to this server and ports 80/443 are open!")
+        print_info("\nEnsure DNS is pointing to this server!")
 
         if not confirm("\nProceed with certificate request?", default=True):
             return False
