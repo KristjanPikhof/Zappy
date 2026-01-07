@@ -32,7 +32,9 @@ A comprehensive VPS management CLI tool for Linux servers.
 ### Quick Install (Recommended)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/zappy/main/install.sh | bash
+git clone https://github.com/KristjanPikhof/Zappy.git /tmp/zappy
+cd /tmp/zappy
+sudo ./install.sh
 ```
 
 ### Manual Install
@@ -40,7 +42,7 @@ curl -fsSL https://raw.githubusercontent.com/KristjanPikhof/zappy/main/install.s
 ```bash
 # Clone the repository
 git clone https://github.com/KristjanPikhof/Zappy.git
-cd zappy
+cd Zappy
 
 # Create virtual environment
 python3 -m venv venv
