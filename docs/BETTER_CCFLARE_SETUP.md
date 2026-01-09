@@ -78,7 +78,7 @@ Nginx Management → Add domain
 
 ---
 
-## Step 3: Add IP Restriction (Optional but Recommended)
+## Step 3: Configure Nginx Settings
 
 Edit the nginx config using Zappy:
 
@@ -92,7 +92,9 @@ Or manually:
 sudo nano /etc/nginx/sites-available/ccflare.example.com
 ```
 
-Add the `allow`/`deny` directives right after `server_name`:
+### Required: File Upload Limit
+
+Add `client_max_body_size` to allow file uploads. Without this, you'll get **413 Request Entity Too Large** errors:
 
 ```nginx
 server {
@@ -100,7 +102,33 @@ server {
     listen [::]:80;
     server_name ccflare.example.com;
 
-    # IP Restriction - only allow your IP
+    # Required: File upload size limit
+    client_max_body_size 50M;
+
+    location / {
+        # ...
+    }
+}
+```
+
+> **Note:** Adjust `50M` based on your needs. For larger files, use `100M` or `500M`.
+
+### Optional: IP Restriction (Recommended)
+
+Restrict access to your IP only by adding `allow`/`deny` directives.
+
+**Complete example with both file upload limit and IP restriction:**
+
+```nginx
+server {
+    listen 80;
+    listen [::]:80;
+    server_name ccflare.example.com;
+
+    # Required: File upload size limit
+    client_max_body_size 50M;
+
+    # Optional: IP Restriction - only allow your IP
     allow YOUR.PUBLIC.IP.HERE;
     deny all;
 
@@ -294,6 +322,58 @@ Make sure container is binding to the right interface:
 sudo docker compose ps
 # Should show 127.0.0.1:8080->8080/tcp
 ```
+
+### 413 Request Entity Too Large
+File uploads are being rejected due to nginx body size limits.
+
+**Option 1: Add to server block** (recommended)
+
+Add `client_max_body_size` to your domain's nginx config:
+```nginx
+server {
+    server_name ccflare.example.com;
+    client_max_body_size 50M;  # Adjust size as needed
+    # ...
+}
+```
+
+**Option 2: Add globally in nginx.conf**
+
+If the server block doesn't work (e.g., SSL config overrides it):
+```bash
+sudo nano /etc/nginx/nginx.conf
+```
+
+Add inside the `http { }` block:
+```nginx
+http {
+    client_max_body_size 50M;
+    # ... rest of config
+}
+```
+
+**Option 3: Add to location block**
+
+Sometimes it needs to be in the specific location:
+```nginx
+location / {
+    client_max_body_size 50M;
+    proxy_pass http://127.0.0.1:8080;
+    # ...
+}
+```
+
+**Check all configs for the directive:**
+```bash
+sudo grep -r "client_max_body_size" /etc/nginx/
+```
+
+After changes:
+```bash
+sudo nginx -t && sudo systemctl reload nginx
+```
+
+> **Note:** If you're using HTTPS (Certbot managed), there may be a separate SSL server block in `/etc/nginx/sites-available/` that also needs this directive.
 
 ---
 
