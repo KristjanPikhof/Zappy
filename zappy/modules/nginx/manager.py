@@ -452,6 +452,7 @@ class NginxManager:
             console.print("[dim]  :wq   → Save and quit[/dim]")
             console.print("[dim]  :q!   → Quit without saving[/dim]")
             console.print()
+            console.input("[dim]Press Enter to open editor...[/dim]")
         else:
             console.print("[dim]Save and exit the editor when done.[/dim]\n")
 
