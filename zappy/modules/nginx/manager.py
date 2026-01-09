@@ -443,10 +443,10 @@ class NginxManager:
         console.print(f"\n[dim]Opening {domain.config_path} with {editor}...[/dim]")
         console.print("[dim]Save and exit the editor when done.[/dim]\n")
 
-        # Run editor with sudo (os.system preserves TTY for interactive editors)
+        # Run editor with sudo -H (preserves TTY, sets HOME to root for editor configs)
         import os
         import shlex
-        os.system(f"sudo {editor} {shlex.quote(domain.config_path)}")
+        os.system(f"sudo -H {editor} {shlex.quote(domain.config_path)}")
 
         # Test config after editing
         if not self.test_config():
