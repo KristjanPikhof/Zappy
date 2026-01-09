@@ -426,8 +426,8 @@ class NginxManager:
         backup_file(domain.config_path, str(backup_path))
         print_info(f"Backup created: {backup_path}")
 
-        # Find available editor
-        editors = ["micro", "nano", "vim", "vi"]
+        # Find available editor (vim first - most compatible with different terminals)
+        editors = ["vim", "vi", "nano", "micro"]
         editor = None
         for ed in editors:
             from ...utils.command import check_command_exists
@@ -436,12 +436,24 @@ class NginxManager:
                 break
 
         if not editor:
-            print_error("No text editor found. Please install micro, nano, or vim.")
+            print_error("No text editor found. Please install vim, nano, or micro.")
             pause()
             return False
 
         console.print(f"\n[dim]Opening {domain.config_path} with {editor}...[/dim]")
-        console.print("[dim]Save and exit the editor when done.[/dim]\n")
+
+        # Show editor-specific help
+        if editor in ["vim", "vi"]:
+            console.print("\n[cyan]Vim Quick Reference:[/cyan]")
+            console.print("[dim]  i     → Insert mode (start typing)[/dim]")
+            console.print("[dim]  Esc   → Exit insert mode[/dim]")
+            console.print("[dim]  :w    → Save[/dim]")
+            console.print("[dim]  :q    → Quit[/dim]")
+            console.print("[dim]  :wq   → Save and quit[/dim]")
+            console.print("[dim]  :q!   → Quit without saving[/dim]")
+            console.print()
+        else:
+            console.print("[dim]Save and exit the editor when done.[/dim]\n")
 
         # Run editor with sudo -H (preserves TTY, sets HOME to root for editor configs)
         import os
