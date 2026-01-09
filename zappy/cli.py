@@ -97,6 +97,7 @@ class VPSToolbox:
                 "Delete domain",
                 "View/Edit config",
                 "SSL Certificates",
+                "Reload nginx",
                 "Nginx status",
             ]
 
@@ -120,6 +121,8 @@ class VPSToolbox:
             elif choice == 6:
                 self.ssl_menu()
             elif choice == 7:
+                self.nginx.reload()
+            elif choice == 8:
                 self.nginx.status()
 
     def nginx_config_menu(self):
