@@ -2,7 +2,7 @@
 
 import os
 import sys
-from typing import List, Optional, Callable, Any
+from typing import List, Optional, Callable, Any, Dict, Set, Tuple
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
@@ -138,6 +138,153 @@ def select_from_list(
             print_error("Invalid choice. Please try again.")
         except ValueError:
             print_error("Please enter a number.")
+
+
+def parse_multi_select_indices(
+    raw_input: str,
+    item_count: int,
+    special_keywords: Optional[Dict[str, List[int]]] = None,
+) -> Tuple[Optional[List[int]], Optional[str]]:
+    """Parse multi-select input into deterministic, deduplicated indices.
+
+    Supports comma-separated numbers and ranges (e.g. ``2,3,5,10`` and ``4-7``),
+    plus optional caller-provided keywords such as ``all/*`` or ``missing/m``.
+
+    Args:
+        raw_input: Raw user input string
+        item_count: Number of selectable items
+        special_keywords: Optional keyword map to indices (0-based)
+
+    Returns:
+        A tuple of ``(indices, error_message)``.
+        - ``indices`` is a list of deduplicated indices in menu order when valid
+        - ``error_message`` is set when parsing fails
+    """
+    value = (raw_input or "").strip().lower()
+    if not value:
+        return None, "Input is empty. Enter numbers, ranges, or a supported keyword."
+
+    keyword_map = {k.lower(): v for k, v in (special_keywords or {}).items()}
+    if value in keyword_map:
+        selected: Set[int] = set()
+        for idx in keyword_map[value]:
+            if not 0 <= idx < item_count:
+                return None, (
+                    f"Keyword '{value}' contains out-of-range value: {idx + 1}. "
+                    f"Valid range is 1-{item_count}."
+                )
+            selected.add(idx)
+        return [i for i in range(item_count) if i in selected], None
+
+    selected: Set[int] = set()
+    tokens = [token.strip() for token in value.split(",")]
+
+    for token in tokens:
+        if not token:
+            return None, "Malformed token: empty value between commas."
+
+        if "-" in token:
+            parts = [part.strip() for part in token.split("-")]
+            if len(parts) != 2 or not parts[0] or not parts[1]:
+                return None, f"Malformed token '{token}'. Expected range like '4-7'."
+
+            try:
+                start = int(parts[0])
+                end = int(parts[1])
+            except ValueError:
+                return None, f"Malformed token '{token}'. Range values must be numbers."
+
+            if start > end:
+                return None, (
+                    f"Invalid range '{token}'. Range start must be less than or equal "
+                    "to range end."
+                )
+
+            if start < 1 or end > item_count:
+                return None, (
+                    f"Out-of-range value in '{token}'. Valid range is 1-{item_count}."
+                )
+
+            for val in range(start, end + 1):
+                selected.add(val - 1)
+            continue
+
+        try:
+            num = int(token)
+        except ValueError:
+            return None, f"Malformed token '{token}'. Expected number or range like '4-7'."
+
+        if not 1 <= num <= item_count:
+            return None, (
+                f"Out-of-range value '{num}'. Valid range is 1-{item_count}."
+            )
+
+        selected.add(num - 1)
+
+    return [i for i in range(item_count) if i in selected], None
+
+
+def multi_select_from_list(
+    items: List[str],
+    title: str = "Select one or more options",
+    allow_back: bool = True,
+    back_value: str = "b",
+    special_keywords: Optional[Dict[str, List[int]]] = None,
+    show_numbers: bool = True,
+) -> Optional[List[int]]:
+    """Display options and read multi-selection input.
+
+    This helper keeps existing ``create_menu`` / ``select_from_list`` behavior intact
+    while offering reusable multi-select input handling with optional back/cancel.
+
+    Args:
+        items: List of items to choose from
+        title: Title for the selection section
+        allow_back: Whether to show and accept a back/cancel option
+        back_value: Back/cancel input value (default: ``b``)
+        special_keywords: Optional map of input keywords to index lists (0-based)
+        show_numbers: Whether to show numbers for items
+
+    Returns:
+        List of selected indices (0-based) in deterministic menu order,
+        or ``None`` when back/cancel is selected.
+    """
+    console.print(f"\n[bold]{title}[/bold]")
+
+    for i, item in enumerate(items, 1):
+        if show_numbers:
+            console.print(f"  [cyan]{i}.[/cyan] {item}")
+        else:
+            console.print(f"  • {item}")
+
+    hints: List[str] = ["comma-separated numbers (e.g. 1,3,5)", "ranges (e.g. 4-7)"]
+    if special_keywords:
+        hints.append("keywords: " + ", ".join(sorted(special_keywords.keys())))
+    console.print(f"  [dim]Hint: {'; '.join(hints)}[/dim]")
+
+    normalized_back = (back_value or "b").strip().lower()
+    if allow_back:
+        console.print(f"  [dim]{normalized_back}. Back/Cancel[/dim]")
+
+    while True:
+        choice = prompt("\nEnter choices").strip().lower()
+        if allow_back and choice == normalized_back:
+            return None
+
+        indices, error = parse_multi_select_indices(
+            choice,
+            len(items),
+            special_keywords=special_keywords,
+        )
+        if error:
+            print_error(error)
+            print_info(
+                f"Try again with numbers 1-{len(items)}, ranges like 2-4, "
+                "or supported keywords."
+            )
+            continue
+
+        return indices
 
 
 def create_menu(
