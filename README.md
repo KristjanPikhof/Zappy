@@ -18,7 +18,7 @@ A comprehensive VPS management CLI tool for Linux servers.
 - **Firewall Management**: UFW and firewalld support for port/service management
 - **Security Hardening**: SSH configuration, fail2ban setup, automatic security updates
 - **Docker Setup**: Install Docker and Dockge (Docker Compose manager)
-- **System Utilities**: Common tools installation, zsh + oh-my-zsh setup, AiTermy, system monitoring
+- **System Utilities**: Batch/multi-select common tools install with expanded catalog (including dev toolchains), plus zsh + oh-my-zsh, AiTermy, and system monitoring
 
 ## Supported Distributions
 

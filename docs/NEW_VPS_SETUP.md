@@ -169,7 +169,11 @@ Docker Setup → Install Dockge
 
 #### 6. Install Useful Tools (optional)
 ```
-System Utilities → Install common tools → Install all missing packages
+System Utilities → Install common tools
+  - Select tools in batch (examples: 2,3,5,10)
+  - Use ranges (example: 4-7)
+  - Use keywords: all/* (all tools), missing/m (only not installed)
+  - Includes installers like NVM+Node 24, Opencode, Claude Code, Rust, Go (official tarball), Homebrew, Flatpak
 System Utilities → Setup zsh + oh-my-zsh
 System Utilities → Install AiTermy
 ```
