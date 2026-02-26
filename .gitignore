@@ -76,3 +76,5 @@ nginx.py
 .trekoon/trekoon.db
 .trekoon/trekoon.db-shm
 .trekoon/trekoon.db-wal
+.opencode/skills/trekoon
+.agents/skills/trekoon/SKILL.md
