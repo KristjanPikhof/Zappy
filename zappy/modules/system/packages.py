@@ -1,6 +1,7 @@
 """Common package installation."""
 
 from typing import List, Dict
+
 from ...utils.command import run_sudo, check_command_exists
 from ...utils.distro import detect_distro, get_install_command, get_update_command, PackageManager
 from ...utils.ui import (
@@ -102,6 +103,50 @@ COMMON_PACKAGES: Dict[str, Dict[str, str]] = {
         "dnf": "neofetch",
         "pacman": "neofetch",
         "apk": "neofetch",
+    },
+    "flatpak": {
+        "description": "Flatpak app platform",
+        "command": "flatpak",
+        "apt": "flatpak",
+        "dnf": "flatpak",
+        "yum": "flatpak",
+        "pacman": "flatpak",
+        "apk": "flatpak",
+        "zypper": "flatpak",
+    },
+}
+
+
+SCRIPT_TOOLS: Dict[str, Dict[str, str]] = {
+    "nvm-node": {
+        "label": "NVM + Node.js 24",
+        "description": "Install NVM and Node.js 24",
+        "command": "node",
+    },
+    "opencode": {
+        "label": "Opencode",
+        "description": "Install Opencode CLI",
+        "command": "opencode",
+    },
+    "claude-code": {
+        "label": "Claude Code",
+        "description": "Install Claude Code CLI",
+        "command": "claude",
+    },
+    "rust": {
+        "label": "Rust",
+        "description": "Install Rust via rustup",
+        "command": "rustc",
+    },
+    "go": {
+        "label": "Go",
+        "description": "Install Go (official tarball)",
+        "command": "go",
+    },
+    "brew": {
+        "label": "Homebrew",
+        "description": "Install Homebrew",
+        "command": "brew",
     },
 }
 
