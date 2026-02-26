@@ -71,3 +71,8 @@ pip-delete-this-directory.txt
 
 # Old files
 nginx.py
+
+# Trekoon task managment
+.trekoon/trekoon.db
+.trekoon/trekoon.db-shm
+.trekoon/trekoon.db-wal
